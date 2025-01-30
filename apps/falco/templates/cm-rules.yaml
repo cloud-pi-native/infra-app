@@ -1,0 +1,6 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: custom-rules-ocp
+data:
+{{ (tpl (.Files.Glob "files/custom-rules.yaml").AsConfig .) | indent 2 }}

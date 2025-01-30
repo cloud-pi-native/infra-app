@@ -1,0 +1,14 @@
+{{- if .Values.grafana_dashboard_enabled }}
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: kyverno
+  namespace: infra-kyverno
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      app: infra
+  json: |- 
+{{ .Files.Get "dashboards/kyverno-dashboard.json" | indent 4 }}
+{{- end }}

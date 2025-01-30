@@ -1,0 +1,77 @@
+namespaceOverride: infra-falco
+
+#customRules:
+#  custom-rules.yaml: "- macro: openshift_ns\n  condition: (k8s.ns.name contains \"openshift\")\n  #magic___^_^___line\n- rule: Contact K8S API Server From Container\n  desc: >\n    Detect attempts to communicate with the K8S API Server from a container by non-profiled users. Kubernetes APIs play a \n    pivotal role in configuring the cluster management lifecycle. Detecting potential unauthorized access to the API server \n    is of utmost importance. Audit your complete infrastructure and pinpoint any potential machines from which the API server \n    might be accessible based on your network layout. If Falco can't operate on all these machines, consider analyzing the \n    Kubernetes audit logs (typically drained from control nodes, and Falco offers a k8saudit plugin) as an additional data \n    source for detections within the control plane.\n  condition: >\n    evt.type=connect and evt.dir=< \n    and (fd.typechar=4 or fd.typechar=6) \n    and container \n    and k8s_api_server \n    and not k8s_containers\n    and not openshift_ns\n    and not user_known_contact_k8s_api_server_activities\n  output: Unexpected connection to K8s API Server from container (connection=%fd.name lport=%fd.lport rport=%fd.rport fd_type=%fd.type fd_proto=fd.l4proto evt_type=%evt.type user=%user.name user_uid=%user.uid user_loginuid=%user.loginuid process=%proc.name proc_exepath=%proc.exepath parent=%proc.pname command=%proc.cmdline terminal=%proc.tty %container.info)\n  priority: NOTICE\n  override:\n    condition: append\n  tags: [maturity_stable, container, network, k8s, mitre_discovery, T1565]\n    #magic___^_^___lin"
+#  more-custom-rules.yaml: |-
+#    - rule: ...
+#      ...
+
+falco:
+  fullnameOverride: falco
+  json_output: true
+  podSecurityContext: ''
+  collectors:
+    docker:
+      enabled: false
+  driver:
+# -- kind tells Falco which driver to use. Available options: kmod (kernel driver), ebpf (eBPF probe), modern_ebpf (modern eBPF probe).
+    enabled: true
+    kind: modern_ebpf
+  falcosidekick:
+    # -- Enable falcosidekick deployment.
+    enabled: false
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      cpu: 750m
+      memory: 1024Mi
+  mounts:
+    volumes:
+      - name: custom-rules-ocp
+        configMap:
+          name: custom-rules-ocp
+    volumeMounts:
+      - name: custom-rules-ocp
+        mountPath: /etc/falco/rules.d/
+
+  falcoctl:
+    artifact:
+      follow:
+        enabled: true
+        mounts:
+          volumeMounts:
+          - name: custom-rules-ocp
+            mountPath: /etc/falco/rules.d/
+
+
+falcosidekick:
+  fullnameOverride: falcosidekick
+  nameOverride: falcosidekick
+  enabled: true
+  podSecurityContext: ''
+  serviceMonitor:
+    enabled: true
+  ingress:
+    enabled: false
+  webui:
+    enabled: false
+    ingress:
+      enabled: true
+    podSecurityContext: ''
+    redis:
+      podSecurityContext: ''
+      securityContext: ''
+      storageSize: '3Gi'
+      resources:
+        limits:
+          memory: '2Gi'
+        requests:
+          memory: '1Gi'
+#{{- if .Values.proxy_falco }}
+#proxy: 
+#  httpProxy: "{{ proxy.http_proxy }}"
+#  httpsProxy: "{{ proxy.https_proxy }}"
+#  noProxy: "{{ proxy.no_proxy }}"
+#{{- end }}

@@ -1,0 +1,45 @@
+---
+kind: CronJob
+apiVersion: batch/v1
+metadata:
+  name: velero-backup-job
+  namespace: {{ include "velero-okd.namespace" . }}
+spec:
+  schedule: "{{ .Values.schedule_cron }}"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    metadata:
+      labels:
+        app: projects-backup
+    spec:
+      backoffLimit: 0
+      template:
+        metadata:
+          labels:
+            app: projects-backup
+        spec:
+          containers:
+          - name: backup
+            image: bitnami/kubectl:1.27.14
+            securityContext:
+              privileged: true
+            command: ["/bin/bash", "-c"]
+            args:
+            - "bash /configmap/script.sh"
+            #- "sleep 1d;"
+            volumeMounts:
+            - name: configmap
+              mountPath: /configmap
+          volumes:
+            - name: configmap
+              configMap:
+                name: script-config
+                defaultMode: 0755
+          restartPolicy: Never
+          terminationGracePeriodSeconds: 30
+          activeDeadlineSeconds: 600
+          dnsPolicy: "ClusterFirst"
+          serviceAccount: "projects-backup"
+          serviceAccountName: projects-backup

@@ -1,0 +1,114 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: script-config
+  namespace: {{ include "velero-okd.namespace" . }}
+data:
+  script.sh: |
+    #!/bin/bash
+    set -e
+    export veleroNameSpace={{ include "velero-okd.namespace" . }}
+    export storageLocation=velero
+
+    if kubectl get schedule cluster-resources -n ${veleroNameSpace} &> /dev/null; then
+    echo "Le schedule 'cluster-resources' existe."
+    else
+    cat <<EOF |kubectl -n ${veleroNameSpace} create -f -
+    apiVersion: velero.io/v1
+    kind: Schedule
+    metadata:
+        name: cluster-resources
+        namespace: ${veleroNameSpace}
+    spec:
+        schedule: '0 0 * * * '
+        template:
+          defaultVolumesToFsBackup: false
+          storageLocation: ${storageLocation}
+          snapshotMoveData: false
+          snapshotVolumes: false
+          ttl: 168h0m0s
+          includeClusterResources: true
+          includedNamespaces:
+          - default
+    EOF
+    fi
+
+    # Lister les schedules existants
+    existing_schedules=$(kubectl get schedules -n ${veleroNameSpace}  -o jsonpath='{.items[*].metadata.name}')
+
+    # Boucler à travers la liste des schedules existants
+    for schedule in $existing_schedules; do
+        # Ignorer le schedule 'cluster-ressources'
+        if [[ $schedule == "cluster-resources" || $schedule == "dso-backup" ]]; then
+            echo "Ignorer le schedule : $schedule"
+            continue
+        fi
+
+        # Vérifier si le namespace correspondant existe
+        namespace_exists=$(kubectl get ns $schedule --ignore-not-found -o jsonpath='{.metadata.name}')
+
+        if [[ -z $namespace_exists ]]; then
+            # Le namespace n'existe plus, supprimer le schedule
+            echo "Suppression du schedule : $schedule"
+            kubectl delete schedule $schedule -n ${veleroNameSpace}
+        else
+            echo "Le namespace $schedule existe encore"
+        fi
+    done
+
+    kubectl get ns --selector=saved-by-velero!=true -o custom-columns="NAME:.metadata.name"|while read nameSpace ;do
+    export scheduleName=${nameSpace}
+    export nameSpace
+        # Vérifier si le schedule existe déjà
+    if kubectl get schedule ${scheduleName} -n ${veleroNameSpace} &>/dev/null; then
+        echo "Le schedule ${scheduleName} existe déjà, il sera supprimé."
+        kubectl delete schedule ${scheduleName} -n ${veleroNameSpace} 
+    else
+        echo "Le schedule ${scheduleName} n'existe pas"
+    fi
+    done
+
+    # Initialisation des variables minute et heure
+    minute=0
+    heure=0
+
+    kubectl get  ns --selector=saved-by-velero=true -o custom-columns="NAME:.metadata.name" |tail -n +2 |while read nameSpace ;do
+        export scheduleName=${nameSpace}
+        export nameSpace
+
+        # Incrémentation de la variable minute
+        minute=$((minute + 5))
+
+        # Incrémentation de la variable heure si minute atteint ou dépasse 60
+        if [ $minute -ge 60 ]; then
+        minute=0
+        heure=$((heure + 1))
+        fi
+
+        # Réinitialisation de la variable heure si elle atteint ou dépasse 24
+        if [ $heure -ge 24 ]; then
+        heure=0
+        fi
+
+        cat <<EOF | kubectl -n ${veleroNameSpace} apply -f -
+    apiVersion: velero.io/v1
+    kind: Schedule
+    metadata:
+        name: ${scheduleName}
+        namespace: ${veleroNameSpace}
+    spec:
+        schedule: '${minute} ${heure} * * *'
+        template:
+          storageLocation: ${storageLocation}
+          ttl: 96h0m0s
+          snapshotMoveData: {{ .Values.snapshot_enabled }}
+          snapshotVolumes: {{ .Values.snapshot_enabled }}
+          includedNamespaces:
+          - ${nameSpace}
+          excludedResources:
+          - clusters.postgresql.cnpg.io
+          - ingresses.networking.k8s.io
+          - routes.route.openshift.io
+
+    EOF
+    done

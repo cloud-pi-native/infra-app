@@ -1,0 +1,34 @@
+appset:
+  clustername: clustertest
+  argoProject: exploitation
+  type: test  # Peut être 'okd', 'rke', ou 'ocp'
+  destination: https://kubernetes.default.svc
+  default:
+    ServerSideApply: true
+    CreateNamespace: true
+    branch: "main"
+    repoUrl: "https://github.com/cloud-pi-native/infra-app.git"
+    valuesRepoUrl: "https://github.com/cloud-pi-native/cluster-automation.git"
+    syncPolicy:
+      prune: true
+      selfHeal: true
+      autoSync: true
+
+
+  # Composants personnalisés à ajouter ou surcharger
+  customComponents: {}
+#    nginx:
+#      namespace: infra-nginx-system
+#      branch: "custom-branch"
+
+  # Composants par type de cluster, avec des maps
+  components:
+    test: 
+      falco:
+        namespace: infra-test-falco
+#      etcd-backup:
+#        namespace: infra-test-etcd-backup
+      sops:
+        namespace: infra-test-sops
+#      velero-okd:
+#        namespace: infra-test-velero

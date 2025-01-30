@@ -1,0 +1,140 @@
+schedule_cron: "38 12 * * * "
+
+snapshot_enabled: true
+default_to_fs_backup: false
+
+volumesnapshotclass:
+  enabled: true
+
+fullnameOverride: velero-okd
+
+velero:
+  fullnameOverride: velero-okd
+  # image:
+  #   imagePullSecrets:
+  #   - docker-registry
+  resources:
+     requests:
+       cpu: 500m
+       memory: 128Mi
+     limits:
+       cpu: '4'
+       memory: 4Gi
+
+
+  deployNodeAgent: true
+
+  tolerations:
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/infra
+    value: reserved
+  - effect: NoExecute
+    key: node-role.kubernetes.io/infra
+    value: reserved
+
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+    prometheusRule:
+      enabled: true
+  credentials:
+    # Whether a secret should be used. Set to false if, for examples:
+    # - using kube2iam or kiam to provide AWS IAM credentials instead of providing the key file. (AWS only)
+    # - using workload identity instead of providing the key file. (Azure/GCP only)
+    useSecret: true
+    # Name of a pre-existing secret (if any) in the Velero namespace
+    # that should be used to get IAM account credentials. Optional.
+    # existingSecret: cloud-credentials
+    # Data to be stored in the Velero secret, if `useSecret` is true and `existingSecret` is empty.
+    # As of the current Velero release, Velero only uses one secret key/value at a time.
+    # The key must be named `cloud`, and the value corresponds to the entire content of your IAM credentials file.
+    # Note that the format will be different for different providers, please check their documentation.
+    # Here is a list of documentation for plugins maintained by the Velero team:
+    # [AWS] https://github.com/vmware-tanzu/velero-plugin-for-aws/blob/main/README.md
+    # [GCP] https://github.com/vmware-tanzu/velero-plugin-for-gcp/blob/main/README.md
+    # [Azure] https://github.com/vmware-tanzu/velero-plugin-for-microsoft-azure/blob/main/README.md
+    # Name of the secret to create if `useSecret` is true and `existingSecret` is empty
+    name: velero
+    secretContents:
+     cloud: |
+       [default]
+       aws_access_key_id=""
+       aws_secret_access_key=""
+
+  initContainers:
+  - name: velero-plugin-for-csi
+    image: velero/velero-plugin-for-csi:v0.7.0
+    imagePullPolicy: IfNotPresent
+    volumeMounts:
+      - mountPath: /target
+        name: plugins
+  - name: velero-plugin-for-aws
+    image: velero/velero-plugin-for-aws:v1.9.0
+    imagePullPolicy: IfNotPresent
+    volumeMounts:
+      - mountPath: /target
+        name: plugins
+  # - name: velero-plugin-openstack
+  #   image: lirt/velero-plugin-for-openstack:v0.6.0
+  #   imagePullPolicy: IfNotPresent
+  #   volumeMounts:
+  #     - mountPath: /target
+  #       name: plugins
+  configuration:
+    features: EnableCSI
+    uploaderType: kopia
+    defaultVolumesToFsBackup: False
+    backupStorageLocation:
+    - name: "velero"
+      provider: aws
+      bucket: ""  # Replace with bucket name you created above
+      default: true
+      prefix: "velero"
+      credential:
+        # name of the secret used by this volumeSnapshotLocation.
+        name: velero
+        # name of key that contains the secret data to be used.
+        key: cloud
+      config:
+        region: "eu-west-1"    # Region where your bucket is located
+        s3Url: "<my_s3_url>"
+        publicUrl: "<my_s3_url>"
+        insecureSkipTLSVerify: true
+        s3ForcePathStyle: 'true'
+    volumeSnapshotLocation:
+      # name is the name of the volume snapshot location where snapshots are being taken. Required.
+    - name: velero
+      # provider is the name for the volume snapshot provider.
+      provider: aws
+      credential:
+      #   # name of the secret used by this volumeSnapshotLocation.
+        name: velero
+      #   # name of key that contains the secret data to be used.
+        key: cloud
+      # Additional provider-specific configuration. See link above
+      # for details of required/optional fields for your provider.
+      config:
+        region: "eu-west-1"
+        insecureSkipTLSVerify: true
+        s3Url: "<my_s3_url>"
+        publicUrl: "<my_s3_url>"
+  schedules:
+    eks-cluster:
+      disabled: true
+      schedule: "0 0 * * *"  # CRON expression to periodically take backups
+      template:
+        ttl: "48h"  # This setting will delete backups automatically after 10 days
+
+  nodeAgent:
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+      limits:
+        cpu: 2000m
+        memory: 2048Mi
+    podSecurityContext:
+      runAsUser: 0
+    containerSecurityContext:
+      privileged: true

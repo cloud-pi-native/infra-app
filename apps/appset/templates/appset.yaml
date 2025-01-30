@@ -1,0 +1,67 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: {{ include "appset.fullname" . }}
+  namespace: {{ include "appset.namespace" . }}
+spec:
+  goTemplate: true
+  generators:
+    - list:
+        elements:
+        # Sélectionner les composants spécifiques au type de cluster
+        {{- $typeComponents := index .Values.appset.components .Values.appset.type }}
+        # Fusionner les composants spécifiques au type et les composants personnalisés
+        {{- $mergedComponents := merge $typeComponents .Values.appset.customComponents }}
+        # Parcourir les composants fusionnés
+        {{- range $appName, $component := $mergedComponents }}
+        {{- $enabled := true }}
+        {{- if hasKey $component "enabled" }}
+          {{- $enabled = $component.enabled }}
+        {{- end }}
+        {{- if $enabled }}
+        - app: {{ $appName }}
+          namespace: {{ $component.namespace }}
+          branch: {{ $component.branch | default $.Values.appset.default.branch }}
+          repoUrl: {{ $component.repoUrl | default $.Values.appset.default.repoUrl }}
+          prune: {{ $component.prune | default $.Values.appset.default.syncPolicy.prune }}
+          autoSync: {{ $component.autoSync | default $.Values.appset.default.syncPolicy.autoSync }}
+          selfHeal: {{ $component.selfHeal | default $.Values.appset.default.syncPolicy.selfHeal }}
+          ServerSideApply: {{ $component.ServerSideApply | default $.Values.appset.default.ServerSideApply }}
+          valuesRepoUrl: {{ $component.valuesRepoUrl | default $.Values.appset.default.valuesRepoUrl }}
+        {{- end }}
+        {{- end }}
+  template:
+    metadata:
+      name: "{{ .Values.appset.clustername }}-{{`{{`}} .app {{`}}`}}"
+    spec:
+      project: "{{ .Values.appset.argoProject }}"
+      source:
+        repoURL: "{{`{{`}} .repoUrl {{`}}`}}"
+        targetRevision: "{{`{{`}} .branch {{`}}`}}"
+        path: "apps/{{`{{`}} .app {{`}}`}}" 
+        - helm:
+          valueFiles:
+            - $global/{{`{{`}} .app {{`}}`}}/values.yaml
+            - $specific/clusters/{{ .Values.appset.clustername }}/values-{{`{{`}} .app {{`}}`}}.yaml
+        - ref: global
+          repoURL: "{{`{{`}} .valuesRepoUrl {{`}}`}}"
+          targetRevision: main
+        - ref: specific
+          repoURL:  "{{`{{`}} .valuesRepoUrl {{`}}`}}"
+          targetRevision: main
+      destination:
+        namespace: "{{`{{`}} .namespace {{`}}`}}"
+        name: {{ .Values.appset.destination }}
+  templatePatch: |
+    spec:
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true
+        {{`{{- if .ServerSideApply }}`}}
+          - ServerSideApply=true
+        {{`{{- end }}`}}
+      {{`{{- if .autoSync }}`}}
+        automated:
+          prune: {{`{{ .prune }}`}}
+          selfHeal: {{`{{ .selfHeal }}`}}
+      {{`{{- end }}`}}
