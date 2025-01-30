@@ -9,6 +9,7 @@ appset:
     branch: "main"
     repoUrl: "https://github.com/cloud-pi-native/infra-app.git"
     valuesRepoUrl: "https://github.com/cloud-pi-native/cluster-automation.git"
+    valuesRepoUrlBranch: "main"
     syncPolicy:
       prune: true
       selfHeal: true

@@ -28,6 +28,7 @@ spec:
           selfHeal: {{ $component.selfHeal | default $.Values.appset.default.syncPolicy.selfHeal }}
           ServerSideApply: {{ $component.ServerSideApply | default $.Values.appset.default.ServerSideApply }}
           valuesRepoUrl: {{ $component.valuesRepoUrl | default $.Values.appset.default.valuesRepoUrl }}
+          valuesRepoUrlBranch: {{ $component.valuesRepoUrlBranch | default $.Values.appset.default.valuesRepoUrlBranch }}
         {{- end }}
         {{- end }}
   template:
@@ -45,10 +46,10 @@ spec:
             - $specific/clusters/{{ .Values.appset.clustername }}/values-{{`{{`}} .app {{`}}`}}.yaml
         - ref: global
           repoURL: "{{`{{`}} .valuesRepoUrl {{`}}`}}"
-          targetRevision: main
+          targetRevision: "{{`{{`}} .valuesRepoUrlBranch {{`}}`}}"
         - ref: specific
           repoURL:  "{{`{{`}} .valuesRepoUrl {{`}}`}}"
-          targetRevision: main
+          targetRevision: "{{`{{`}} .valuesRepoUrlBranch {{`}}`}}"
       destination:
         namespace: "{{`{{`}} .namespace {{`}}`}}"
         name: {{ .Values.appset.destination }}
