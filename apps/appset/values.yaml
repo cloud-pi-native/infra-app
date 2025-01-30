@@ -1,8 +1,6 @@
 appset:
   clustername: clustertest
-  argoProject: exploitation
   type: test  # Peut être 'okd', 'rke', ou 'ocp'
-  destination: https://kubernetes.default.svc
   default:
     ServerSideApply: true
     CreateNamespace: true
