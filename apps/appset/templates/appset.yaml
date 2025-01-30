@@ -33,7 +33,7 @@ spec:
         {{- end }}
   template:
     metadata:
-      name: "{{ .Values.appset.clustername }}-{{`{{`}} .app {{`}}`}}"
+      name: "{{ .Values.appset.clustername }}-test-{{`{{`}} .app {{`}}`}}"
     spec:
       project: "{{ .Values.appset.clustername }}"
       sources:
