@@ -42,7 +42,7 @@ spec:
         path: "apps/{{`{{`}} .app {{`}}`}}" 
         helm:
           valueFiles:
-            - $global/{{`{{`}} .app {{`}}`}}/values.yaml
+            - $global/apps/{{`{{`}} .app {{`}}`}}/values.yaml
             - $specific/clusters/{{ .Values.appset.clustername }}/values-{{`{{`}} .app {{`}}`}}.yaml
       - ref: global
         repoURL: "{{`{{`}} .valuesRepoUrl {{`}}`}}"
