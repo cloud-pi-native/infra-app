@@ -37,19 +37,19 @@ spec:
     spec:
       project: "{{ .Values.appset.clustername }}"
       source:
-        repoURL: "{{`{{`}} .repoUrl {{`}}`}}"
+      - repoURL: "{{`{{`}} .repoUrl {{`}}`}}"
         targetRevision: "{{`{{`}} .branch {{`}}`}}"
         path: "apps/{{`{{`}} .app {{`}}`}}" 
-        - helm:
+        helm:
           valueFiles:
             - $global/{{`{{`}} .app {{`}}`}}/values.yaml
             - $specific/clusters/{{ .Values.appset.clustername }}/values-{{`{{`}} .app {{`}}`}}.yaml
-        - ref: global
-          repoURL: "{{`{{`}} .valuesRepoUrl {{`}}`}}"
-          targetRevision: "{{`{{`}} .valuesRepoUrlBranch {{`}}`}}"
-        - ref: specific
-          repoURL:  "{{`{{`}} .valuesRepoUrl {{`}}`}}"
-          targetRevision: "{{`{{`}} .valuesRepoUrlBranch {{`}}`}}"
+      - ref: global
+        repoURL: "{{`{{`}} .valuesRepoUrl {{`}}`}}"
+        targetRevision: "{{`{{`}} .valuesRepoUrlBranch {{`}}`}}"
+      - ref: specific
+        repoURL:  "{{`{{`}} .valuesRepoUrl {{`}}`}}"
+        targetRevision: "{{`{{`}} .valuesRepoUrlBranch {{`}}`}}"
       destination:
         namespace: "{{`{{`}} .namespace {{`}}`}}"
         name: {{ .Values.appset.clustername }}
