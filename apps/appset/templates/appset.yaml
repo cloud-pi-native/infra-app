@@ -30,7 +30,7 @@ spec:
           valuesRepoUrl: {{ $component.valuesRepoUrl | default $.Values.appset.default.valuesRepoUrl }}
           valuesRepoUrl1: {{ $component.valuesRepoUrl1 | default $.Values.appset.default.valuesRepoUrl }}
           valuesRepoUrlBranch: {{ $component.valuesRepoUrlBranch | default $.Values.appset.default.valuesRepoUrlBranch }}
-          valuesRepoUrlBranch: {{ $component.valuesRepoUrlBranch | default $.Values.appset.default.valuesRepoUrlBranch }}
+          valuesRepoUrlBranch1: {{ $component.valuesRepoUrlBranch1 | default $.Values.appset.default.valuesRepoUrlBranc1h }}
         {{- end }}
         {{- end }}
   template:
@@ -51,7 +51,7 @@ spec:
         targetRevision: "{{`{{`}} .valuesRepoUrlBranch {{`}}`}}"
       - ref: specific
         repoURL:  "{{`{{`}} .valuesRepoUrl1 {{`}}`}}"
-        targetRevision: "{{`{{`}} .valuesRepoUrlBranch {{`}}`}}"
+        targetRevision: "{{`{{`}} .valuesRepoUrlBranch1 {{`}}`}}"
       destination:
         namespace: "{{`{{`}} .namespace {{`}}`}}"
         name: {{ .Values.appset.clustername }}

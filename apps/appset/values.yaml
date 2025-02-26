@@ -1,6 +1,6 @@
 appset:
   clustername: clustertest
-  type: kube  # Peut être 'okd', 'rke', ou 'ocp'
+  type: kube  # Peut être 'okd', 'rke', ou 'kube'
   default:
     ServerSideApply: true
     CreateNamespace: true
@@ -9,6 +9,7 @@ appset:
     valuesRepoUrl: "https://github.com/cloud-pi-native/cluster-automation.git"
     valuesRepoUrl1: "https://github.com/cloud-pi-native/cluster-automation.git"
     valuesRepoUrlBranch: "main"
+    valuesRepoUrlBranch1: "main"
     syncPolicy:
       prune: true
       selfHeal: true
@@ -24,7 +25,7 @@ appset:
   # Composants par type de cluster, avec des maps
   components:
     kube:
-      cert-manager:
+      cert-manager:g
         namespace: cert-manager
       cortex:
         namespace: cortex
