@@ -41,5 +41,5 @@ spec:
           terminationGracePeriodSeconds: 30
           activeDeadlineSeconds: 600
           dnsPolicy: "ClusterFirst"
-          serviceAccount: "projects-backup"
-          serviceAccountName: projects-backup
+          serviceAccount: "{{ .Values.serviceAccount }}"
+          serviceAccountName: {{ .Values.serviceAccount }}

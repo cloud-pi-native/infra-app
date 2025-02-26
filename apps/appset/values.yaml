@@ -1,5 +1,6 @@
 appset:
   clustername: clustertest
+#  destination: in-cluster
   type: kube  # Peut être 'okd', 'rke', ou 'kube'
   default:
     ServerSideApply: true
@@ -27,10 +28,16 @@ appset:
     kube:
       cert-manager:
         namespace: cert-manager
+      cnpg-operator:
+        namespace: cnpg-operator
       cortex:
         namespace: cortex
       falco:
         namespace: falco
+      kyverno:
+        namespace: kyverno
+      kyverno-rules:
+        namespace: kyverno
       rbac-manager:
         namespace: rbac-manager
       sops:
@@ -38,7 +45,7 @@ appset:
       teleport:
         namespace: teleport
       trivy-operator:
-        namespace: trivy-operator
+        namespace: infra-trivy-system
       velero:
         namespace: velero
       vso:

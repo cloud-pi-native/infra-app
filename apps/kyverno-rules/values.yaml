@@ -1,0 +1,17 @@
+pvc_limit:
+  enabled: true
+  size: 1Ti
+
+require_pod_probes:
+  enabled: false
+
+## La valeurs peut-être egale a Enforce ou Audit
+validationFailureAction: Audit
+
+# Allowed image registry 
+#imagePolicy:
+#  allowedImages: "docker.io/*|harbor.io/*|registry.redhat.io/*|quay.io/*|bitnami/*|ghcr.io/*"
+
+
+excludedNamespaces: []
+

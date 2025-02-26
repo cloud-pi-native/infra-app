@@ -54,7 +54,7 @@ spec:
         targetRevision: "{{`{{`}} .valuesRepoUrlBranch1 {{`}}`}}"
       destination:
         namespace: "{{`{{`}} .namespace {{`}}`}}"
-        name: {{ .Values.appset.clustername }}
+        name: {{ .Values.appset.destination | default .Values.appset.clustername }}
   templatePatch: |
     spec:
       syncPolicy:

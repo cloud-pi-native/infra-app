@@ -1,6 +1,6 @@
 grafana: 
   dashboard: false
-  namespace: trivy
+  namespace: infra-trivy-system
 
 scc_enabled: true
 
