@@ -1,0 +1,30 @@
+cert-manager:
+  fullnameOverride: cert-manager
+  enabled: true
+  installCRDs: true
+  dns01RecursiveNameservers: "8.8.8.8:53, 8.8.4.4:53"
+
+email:
+
+SCW_ACCESS_KEY:
+
+SCW_SECRET_KEY:
+
+dnsZone: '<my_zone>'
+scaleway:
+  fullnameOverride: cert-manager-scaleway
+  enabled: true
+  ## @param securityContext Container security context
+  securityContext:
+    # runAsNonRoot: true
+    runAsUser:  0
+    # runAsGroup: 1000
+
+  ## @param podSecurityContext Pod security context
+  podSecurityContext:
+    # runAsNonRoot: true
+    runAsUser:  0
+    # runAsGroup: 1000
+  pki:
+    caDuration: 43800h0m0s # 5y
+    servingCertificateDuration: 8760h0m0s # 1y

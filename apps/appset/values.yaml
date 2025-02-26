@@ -1,12 +1,13 @@
 appset:
   clustername: clustertest
-  type: test  # Peut être 'okd', 'rke', ou 'ocp'
+  type: kube  # Peut être 'okd', 'rke', ou 'ocp'
   default:
     ServerSideApply: true
     CreateNamespace: true
     branch: "main"
     repoUrl: "https://github.com/cloud-pi-native/infra-app.git"
     valuesRepoUrl: "https://github.com/cloud-pi-native/cluster-automation.git"
+    valuesRepoUrl1: "https://github.com/cloud-pi-native/cluster-automation.git"
     valuesRepoUrlBranch: "main"
     syncPolicy:
       prune: true
@@ -22,12 +23,23 @@ appset:
 
   # Composants par type de cluster, avec des maps
   components:
-    test: 
+    kube:
+      cert-manager:
+        namespace: cert-manager
+      cortex:
+        namespace: cortex
       falco:
-        namespace: infra-test-falco
-#      etcd-backup:
-#        namespace: infra-test-etcd-backup
+        namespace: falco
+      rbac-manager:
+        namespace: rbac-manager
       sops:
-        namespace: infra-test-sops
-#      velero-okd:
-#        namespace: infra-test-velero
+        namespace: sops
+      teleport:
+        namespace: teleport
+      trivy-operator:
+        namespace: trivy-operator
+      velero:
+        namespace: velero
+      vso:
+        namespace: vso
+      

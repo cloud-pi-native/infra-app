@@ -6,10 +6,10 @@ default_to_fs_backup: false
 volumesnapshotclass:
   enabled: true
 
-fullnameOverride: velero-okd
+fullnameOverride: velero
 
 velero:
-  fullnameOverride: velero-okd
+  fullnameOverride: velero
   # image:
   #   imagePullSecrets:
   #   - docker-registry

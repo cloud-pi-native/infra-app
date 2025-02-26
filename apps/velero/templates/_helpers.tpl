@@ -1,7 +1,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "velero-okd.name" -}}
+{{- define "velero.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -10,7 +10,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "velero-okd.fullname" -}}
+{{- define "velero.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,14 +26,14 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "velero-okd.chart" -}}
+{{- define "velero.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Allow the release namespace to be overridden.
 */}}
-{{- define "velero-okd.namespace" -}}
+{{- define "velero.namespace" -}}
   {{- if .Values.namespaceOverride -}}
     {{- .Values.namespaceOverride -}}
   {{- else -}}
@@ -45,9 +45,9 @@ Allow the release namespace to be overridden.
 {{/*
 Common labels
 */}}
-{{- define "velero-okd.labels" -}}
-helm.sh/chart: {{ include "velero-okd.chart" . }}
-{{ include "velero-okd.selectorLabels" . }}
+{{- define "velero.labels" -}}
+helm.sh/chart: {{ include "velero.chart" . }}
+{{ include "velero.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -57,17 +57,17 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "velero-okd.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "velero-okd.name" . }}
+{{- define "velero.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "velero.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "velero-okd.serviceAccountName" -}}
+{{- define "velero.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "velero-okd.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "velero.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}

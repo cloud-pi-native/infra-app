@@ -1,0 +1,29 @@
+client:
+  enabled: true
+  initSecurityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+    - all
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: null
+  podSecurityContext:
+  fsGroup: null
+  roles: kube
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - all
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: null
+
+server:
+  enabled: false
+  # MetalLB addresses
+  addresses: []
+  annotations:
+    service:
+      metallb.universe.tf/address-pool: teleport-ippool

@@ -3,7 +3,7 @@ kind: CronJob
 apiVersion: batch/v1
 metadata:
   name: velero-backup-job
-  namespace: {{ include "velero-okd.namespace" . }}
+  namespace: {{ include "velero.namespace" . }}
 spec:
   schedule: "{{ .Values.schedule_cron }}"
   concurrencyPolicy: Forbid

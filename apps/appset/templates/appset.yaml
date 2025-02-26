@@ -28,6 +28,8 @@ spec:
           selfHeal: {{ $component.selfHeal | default $.Values.appset.default.syncPolicy.selfHeal }}
           ServerSideApply: {{ $component.ServerSideApply | default $.Values.appset.default.ServerSideApply }}
           valuesRepoUrl: {{ $component.valuesRepoUrl | default $.Values.appset.default.valuesRepoUrl }}
+          valuesRepoUrl1: {{ $component.valuesRepoUrl1 | default $.Values.appset.default.valuesRepoUrl }}
+          valuesRepoUrlBranch: {{ $component.valuesRepoUrlBranch | default $.Values.appset.default.valuesRepoUrlBranch }}
           valuesRepoUrlBranch: {{ $component.valuesRepoUrlBranch | default $.Values.appset.default.valuesRepoUrlBranch }}
         {{- end }}
         {{- end }}
@@ -48,7 +50,7 @@ spec:
         repoURL: "{{`{{`}} .valuesRepoUrl {{`}}`}}"
         targetRevision: "{{`{{`}} .valuesRepoUrlBranch {{`}}`}}"
       - ref: specific
-        repoURL:  "{{`{{`}} .valuesRepoUrl {{`}}`}}"
+        repoURL:  "{{`{{`}} .valuesRepoUrl1 {{`}}`}}"
         targetRevision: "{{`{{`}} .valuesRepoUrlBranch {{`}}`}}"
       destination:
         namespace: "{{`{{`}} .namespace {{`}}`}}"

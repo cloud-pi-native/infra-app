@@ -1,0 +1,11 @@
+---
+apiVersion: v2
+name: cortex
+type: application
+version: 0.6.0
+appVersion: "1.11.0"
+dependencies:
+  - name: cortex-tenant
+    alias: cortex
+    version: 0.6.0
+    repository: https://blind-oracle.github.io/cortex-tenant/

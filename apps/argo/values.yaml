@@ -1,0 +1,104 @@
+#helm install argo argoproj/argo-cd -f test-values.yaml -n infra-argo --version 7.6.4
+
+global:
+  domain: argo.<my_domain>
+
+configs:
+  cm:
+    resource.exclusions: |
+      - apiGroups:
+        - tekton.dev
+        clusters:
+        - '*'
+        kinds:
+        - TaskRun
+        - PipelineRun
+      - apiGroups:
+        - wgpolicyk8s.io
+        - aquasecurity.github.io
+        clusters:
+        - '*'
+        kinds:
+        - '*'
+      - apiGroups:
+        - postgresql.cnpg.io
+        clusters:
+        - '*'
+        kinds:
+        - Backup
+      - apiGroups:
+        - reports.kyverno.io
+        clusters:
+        - '*'
+        kinds:
+        - EphemeralReport
+      - apiGroups:
+        - reports.kyverno.io/v1
+        clusters:
+        - '*'
+        kinds:
+        - EphemeralReport
+
+server:
+  insecure: true
+  service:
+    type: ClusterIP  # Utilisation de ClusterIP pour le service ArgoCD server
+  certificate:
+    # -- Deploy a Certificate resource (requires cert-manager)
+    enabled: false
+    # -- The name of the Secret that will be automatically created and managed by this Certificate resource
+    secretName: argocd-server-tls
+    # -- Certificate primary domain (commonName)
+    domain: argo.<my_domain>
+    # Certificate issuer
+    ## Ref: https://cert-manager.io/docs/concepts/issuer
+    issuer:
+      # -- Certificate issuer group. Set if using an external issuer. Eg. `cert-manager.io`
+      group: "cert-manager.io"
+      # -- Certificate issuer kind. Either `Issuer` or `ClusterIssuer`
+      kind: "ClusterIssuer"
+      # -- Certificate issuer name. Eg. `letsencrypt`
+      name: "<my_cluster_issuer>"
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      interval: 60s
+  replicas: 3
+
+  ingress:
+    enabled: true
+    annotations:
+      cert-manager.io/cluster-issuer: <my_cluster_issuer>
+      nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+    ingressClassName: nginx
+    hosts:
+      - argo.<my_domain>
+    tls:
+      - hosts:
+          - argo.<my_domain>
+        secretName: argocd-server-tls
+    # -- Uses `server.service.servicePortHttps` instead `server.service.servicePortHttp`
+    https: false      
+  extraArgs:
+    - --insecure # Pour accepter des connexions non sécurisées
+
+repoServer:
+  replicas: 3
+
+applicationSet:
+  replicas: 3
+
+redis:
+  enabled: true
+
+redis-ha:
+  enabled: false
+
+crds:
+  install: true
+  keep: true
+dex:
+  enabled: false
+notifications:
+  enabled: false

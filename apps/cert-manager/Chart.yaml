@@ -1,0 +1,16 @@
+apiVersion: v2
+name: cert-manager
+type: application
+version: 0.1.0
+appVersion: v1.13.2
+dependencies:
+  - name: cert-manager
+    alias: cert-manager
+    version: v1.13.2
+    repository: https://charts.jetstack.io/
+    condition: cert-manager.enabled
+  - name: scaleway-certmanager-webhook
+    alias: scaleway
+    version: 0.3.0
+    repository: https://helm.scw.cloud/
+    condition: scaleway.enabled

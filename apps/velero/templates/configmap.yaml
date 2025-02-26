@@ -2,12 +2,12 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: script-config
-  namespace: {{ include "velero-okd.namespace" . }}
+  namespace: {{ include "velero.namespace" . }}
 data:
   script.sh: |
     #!/bin/bash
     set -e
-    export veleroNameSpace={{ include "velero-okd.namespace" . }}
+    export veleroNameSpace={{ include "velero.namespace" . }}
     export storageLocation=velero
 
     if kubectl get schedule cluster-resources -n ${veleroNameSpace} &> /dev/null; then

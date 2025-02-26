@@ -1,0 +1,12 @@
+apiVersion: v2
+name: rbac-manager
+version: 0.1.0
+appVersion: "0.1.1"
+description: Rbac-manager
+icon: https://raw.githubusercontent.com/cncf/artwork/master/projects/falco/horizontal/color/falco-horizontal-color.svg
+sources:
+  - https://github.com/FairwindsOps/rbac-manager
+dependencies:
+  - name: rbac-manager
+    version: "1.21.0"
+    repository: https://charts.fairwinds.com/stable 

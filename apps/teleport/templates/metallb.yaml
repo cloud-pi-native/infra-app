@@ -1,0 +1,19 @@
+{{ if .Values.server.enabled }}
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: teleport-ippool
+  namespace: infra-metallb-system
+spec:
+  addresses: {{ .Values.server.addresses }}
+  autoAssign: false
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: metallb-pool-adv-teleport
+  namespace: infra-metallb-system
+spec:
+  ipAddressPools:
+  - teleport-ippool
+{{ end }}

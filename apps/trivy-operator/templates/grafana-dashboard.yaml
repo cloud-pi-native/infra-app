@@ -1,0 +1,14 @@
+{{- if .Values.grafana.dashboard }}
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: trivy-operator
+  namespace: {{ .Values.grafana.namespace }}
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      app: infra
+  json: |- 
+{{ .Files.Get "dashboards/trivy-dashboard.json" | indent 4 }}
+{{- end }}

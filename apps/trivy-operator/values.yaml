@@ -1,0 +1,77 @@
+grafana: 
+  dashboard: false
+  namespace: trivy
+
+scc_enabled: true
+
+trivy:
+  fullnameOverride: trivy
+  serviceMonitor:
+    enabled: true
+    interval: 60s
+    # -- The namespace where Prometheus expects to find service monitors
+  #namespace: ~
+  excludeNamespaces: "infra-trivy-system"
+
+  operator:
+    replicas: 2
+    scanJobsConcurrentLimit: 3
+    # -- the flag to enable sbom generation
+    sbomGenerationEnabled: false
+    # -- scannerReportTTL the flag to set how long a report should exist. "" means that the ScannerReportTTL feature is disabled
+    scannerReportTTL: "24h"
+    # -- metricsVulnIdEnabled the flag to enable metrics about cve vulns id
+    metricsVulnIdEnabled: true
+    # -- builtInTrivyServer The flag enable the usage of built-in trivy server in cluster ,its also override the following trivy params with built-in values
+    # trivy.mode = ClientServer and serverURL = http://<serverServiceName>.<trivy operator namespace>:4975
+    builtInTrivyServer: true
+    builtInServerRegistryInsecure: trivy
+  trivy:
+    command: filesystem
+    ignoreUnfixed: true
+    # -- slow this flag is to use less CPU/memory for scanning though it takes more time than normal scanning. It fits small-footprint
+    slow: true
+    # -- clientServerSkipUpdate is the flag to enable skip databases update for Trivy client. # Only applicable in ClientServer mode.
+    clientServerSkipUpdate: false
+    # -- podSecurityContext set trivy-server podSecurityContext
+    server:
+      podSecurityContext:
+        runAsNonRoot: true
+        runAsUser: null
+        fsGroup: null
+   # -- resources set trivy-server resource 
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+          # ephemeralStorage: "2Gi"
+        limits:
+          cpu: 500m
+          memory: 512Mi 
+    # -- resources resource requests and limits for scan job containers
+    resources:
+      requests:
+        cpu: 200m
+        memory: 256M
+        # ephemeralStorage: "2Gi"
+      limits:
+        cpu: 800m
+        memory: 640M
+
+#   # -- httpProxy is the HTTP proxy used by Trivy to download the vulnerabilities database from GitHub.
+#   httpProxy: ~
+#   # -- httpsProxy is the HTTPS proxy used by Trivy to download the vulnerabilities database from GitHub.
+#   httpsProxy: ~
+#   # -- noProxy is a comma separated list of IPs and domain names that are not subject to proxy settings.
+#   noProxy: ~
+
+
+  trivyOperator:
+      scanJobAutomountServiceAccountToken: true
+      scanJobPodTemplateContainerSecurityContext:
+          # For filesystem scanning, Trivy needs to run as the root user
+          # https://aquasecurity.github.io/trivy-operator/v0.16.1/tutorials/private-registries/   
+          runAsUser: 0
+          privileged: false
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true

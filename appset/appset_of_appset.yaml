@@ -23,11 +23,15 @@ spec:
         targetRevision: '{{ .appset.default.branch }}'
         path: apps/appset
         helm:
-          valueFiles: 
+          valueFiles:
+            - "$appset/appset/values.yaml"
             - "$cluster/clusters/{{ .appset.clustername }}/values-test.yaml"
+      - ref: appset
+        repoURL:  "https://github.com/cloud-pi-native/cluster-automation.git"
+        targetRevision: "main"
       - ref: cluster
         repoURL:  "https://github.com/cloud-pi-native/cluster-automation.git"
-        targetRevision: "main"          
+        targetRevision: "main"     
       destination:
         name: in-cluster
         namespace: infra-argo

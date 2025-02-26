@@ -1,0 +1,17 @@
+cortex:
+  fullnameOverride: cortex
+  
+  resources:
+    limits:
+      memory: 2G
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+  podDisruptionBudget:
+    enabled: false
+
+  serviceMonitor:
+    enabled: true
+  autoscaling:
+    enabled: false

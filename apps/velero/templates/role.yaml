@@ -2,13 +2,13 @@ kind: ServiceAccount
 apiVersion: v1
 metadata:
   name: projects-backup
-  namespace: {{ include "velero-okd.namespace" . }}
+  namespace: {{ include "velero.namespace" . }}
   labels:
     app: projects-backup
 
 
 ---
-apiVersion: rbac.authorization.k8s.io/v1
+apiVersion: clusterroles.rbac.authorization.k8s.io
 kind: ClusterRole
 metadata:
   name: cluster-projects-backup
@@ -40,7 +40,7 @@ rules:
 
 ---
 kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
+apiVersion: clusterrolebindings.rbac.authorization.k8s.io
 metadata:
   name: projects-backup
   labels:
@@ -48,24 +48,24 @@ metadata:
 subjects:
 - kind: ServiceAccount
   name: projects-backup
-  namespace: {{ include "velero-okd.namespace" . }}
+  namespace: {{ include "velero.namespace" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: cluster-projects-backup
 
 
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: projects-backup-privileged
-  namespace: {{ include "velero-okd.namespace" . }}
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: system:openshift:scc:privileged
-subjects:
-- kind: ServiceAccount
-  name: projects-backup
-  namespace: {{ include "velero-okd.namespace" . }}
+#---
+#apiVersion: rbac.authorization.k8s.io/v1
+#kind: RoleBinding
+#metadata:
+#  name: projects-backup-privileged
+#  namespace: {{ include "velero.namespace" . }}
+#roleRef:
+#  apiGroup: rbac.authorization.k8s.io
+#  kind: ClusterRole
+#  name: system:openshift:scc:privileged
+#subjects:
+#- kind: ServiceAccount
+#  name: projects-backup
+#  namespace: {{ include "velero.namespace" . }}
