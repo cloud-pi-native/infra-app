@@ -25,7 +25,7 @@ appset:
   # Composants par type de cluster, avec des maps
   components:
     kube:
-      cert-manager:g
+      cert-manager:
         namespace: cert-manager
       cortex:
         namespace: cortex
