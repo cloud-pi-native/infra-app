@@ -24,6 +24,3 @@ server:
   enabled: false
   # MetalLB addresses
   addresses: []
-  annotations:
-    service:
-      metallb.universe.tf/address-pool: teleport-ippool
