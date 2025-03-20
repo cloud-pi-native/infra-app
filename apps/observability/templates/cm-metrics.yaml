@@ -1,0 +1,129 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alloy-metrics-config
+  namespace: {{ include "observability.namespace" . }}
+data:
+  config.alloy: |
+    prometheus.remote_write "default" {
+      endpoint {
+        url = "http://cortex.infra-cortex.svc:8080/push"
+        write_relabel_config {
+          source_labels = ["namespace"]
+          regex = "^infra-(.*)"
+          target_label = "{{ .Values.global.tenantLabel }}"
+          replacement = "infra"
+        }
+        write_relabel_config {
+          source_labels = ["namespace"]
+          regex = "^(openshift-|kube-|default$).*"
+          action = "drop"
+        }
+        write_relabel_config {
+          source_labels = ["namespace"]
+          regex = "^dso-(.*)"
+          target_label = "{{ .Values.global.tenantLabel }}"
+          replacement = "dso"
+        }
+        write_relabel_config {
+          source_labels = ["namespace"]
+          regex = "(\\w+-.*)-(\\w+-\\w+)"
+          target_label = "{{ .Values.global.tenantLabel }}"
+          replacement = "${1}"
+        }
+        write_relabel_config {
+          source_labels = ["namespace"]
+          regex = "(\\w+)--(\\w+)"
+          target_label = "{{ .Values.global.tenantLabel }}"
+          replacement = "${2}"
+        }
+        write_relabel_config {
+          source_labels = ["{{ .Values.global.tenantLabel }}"]
+          regex = ".+"
+          target_label = "ocp_cluster"
+          replacement = "{{ .Values.global.cluster }}"
+        }
+        write_relabel_config {
+          source_labels = ["{{ .Values.global.tenantLabel }}"]
+          regex = ".+"
+          action = "keep"
+        }
+      }
+    }
+
+    {{- if .Values.global.openshift }}
+    prometheus.operator.servicemonitors "default" {
+      forward_to = [prometheus.remote_write.default.receiver]
+      clustering {
+        enabled = true
+      }
+      selector {
+        match_expression {
+          key = "argocd.argoproj.io/instance"
+          operator = "Exists"
+        }
+      }
+    }
+    prometheus.operator.podmonitors "default" {
+      forward_to = [prometheus.remote_write.default.receiver]
+      clustering {
+        enabled = true
+      }
+      selector {
+        match_expression {
+          key = "argocd.argoproj.io/instance"
+          operator = "Exists"
+        }
+      }
+    }
+    prometheus.operator.probes "default" {
+      forward_to = [prometheus.remote_write.default.receiver]
+      clustering {
+        enabled = true
+      }
+      selector {
+        match_expression {
+          key = "argocd.argoproj.io/instance"
+          operator = "Exists"
+        }
+      }
+    }
+    {{- else }}
+    prometheus.operator.servicemonitors "default" {
+      forward_to = [prometheus.remote_write.default.receiver]
+      clustering {
+        enabled = true
+      }
+    }
+    {{- end }}
+
+    {{- if .Values.global.alert }}
+    {{- range $project := default .Values.projects .Values.global.projects }}
+    {{- range $env, $val := $project.envs }}
+    {{- range $tenant, $val := $val.tenants }}
+    mimir.rules.kubernetes {{ regexReplaceAll "\\W+" $tenant "_" | quote }} {
+      address = {{ $.Values.global.metrics | quote }}
+      tenant_id = {{ $tenant | quote }}
+      rule_selector {
+        match_labels = {
+          type = "metrics",
+          tenant_id = {{ $tenant | quote }},
+        }
+      }
+    }
+    
+    loki.rules.kubernetes {{ regexReplaceAll "\\W+" $tenant "_" | quote }} {
+      address = {{ $.Values.global.logs | quote }}
+      tenant_id = {{ $tenant | quote }}
+      rule_selector { 
+        match_labels = {
+          type = "logs",
+          tenant_id = {{ $tenant | quote }},
+        }
+      }
+    }
+
+    {{- end }}
+    {{- end }}
+    {{- end }}
+    {{- end }}

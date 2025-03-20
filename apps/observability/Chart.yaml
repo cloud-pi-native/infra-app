@@ -1,0 +1,30 @@
+apiVersion: v2
+type: application
+name: observability
+version: 0.1.1
+appVersion: "v1.4.2"
+dependencies:
+- name: alloy
+  alias: metrics
+  version: 0.11.0
+  repository: https://grafana.github.io/helm-charts
+- name: alloy
+  alias: logs
+  version: 0.11.0
+  repository: https://grafana.github.io/helm-charts
+- name: prometheus-operator-crds
+  version: 13.0.2
+  repository: https://prometheus-community.github.io/helm-charts
+  condition: prometheus-operator-crds.enabled
+- name: kube-state-metrics
+  version: "5.30.*"
+  repository: https://prometheus-community.github.io/helm-charts
+  condition: global.kubeStateMetrics
+- name: prometheus-node-exporter
+  version: "4.44.*"
+  repository: https://prometheus-community.github.io/helm-charts
+  condition: global.nodeExporter
+- name: cadvisor
+  version: "2.3.*"
+  repository: https://ckotzbauer.github.io/helm-charts
+  condition: global.cadvisor

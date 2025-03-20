@@ -1,0 +1,10 @@
+---
+apiVersion: v2
+name: vso
+type: application
+version: 1.0.0
+appVersion: 2.16.1
+dependencies:
+  - name: keda
+    repository: https://kedacore.github.io/charts
+    version: 2.16.1

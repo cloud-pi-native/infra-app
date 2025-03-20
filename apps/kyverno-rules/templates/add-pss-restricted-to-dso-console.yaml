@@ -1,0 +1,37 @@
+{{- if .Values.addPssRestrictedToDSOConsole.enabled -}}
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: add-pss-restricted-to-dso-console
+  annotations:
+    policies.kyverno.io/title: Add PSS Restricted Mode to DSO Console Namespaces
+    policies.kyverno.io/category: Pod Security Standards
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/subject: Namespace
+    policies.kyverno.io/description: >-
+      This policy adds Pod Security Standard labels in restricted mode to
+      namespaces with the label 'app.kubernetes.io/managed-by: dso-console'.
+spec:
+  background: true
+  validationFailureAction: Enforce
+  webhookTimeoutSeconds: 30
+  rules:
+    - name: add-pss-restricted-labels
+      skipBackgroundRequests: false
+      match:
+        any:
+        - resources:
+            kinds:
+              - Namespace
+            selector:
+              matchLabels:
+                app.kubernetes.io/managed-by: dso-console
+      mutate:
+        patchStrategicMerge:
+          metadata:
+            labels:
+              +(pod-security.kubernetes.io/enforce): restricted
+              +(pod-security.kubernetes.io/enforce-version): latest
+              +(pod-security.kubernetes.io/warn): restricted
+              +(pod-security.kubernetes.io/warn-version): latest
+{{- end -}}
